@@ -39,7 +39,7 @@ Ejemplo de salida (datos ficticios):
 ```
 Cuenta 123456789012 (arn:aws:iam::123456789012:user/ejemplo) - región us-east-1
 
-[x] [HIGH] ec2-sg-open-ssh - Security Group con SSH abierto a Internet
+✗ [HIGH] ec2-sg-open-ssh - Security Group con SSH abierto a Internet
   GroupId               Name  VPC
   sg-0a1b2c3d4e5f67890  web   vpc-0123456789abcdef0
   1 hallazgo(s)

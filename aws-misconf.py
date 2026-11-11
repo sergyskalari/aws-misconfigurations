@@ -37,20 +37,20 @@ def authenticate(session, region):
     return region, identity
 
 
-def pass_symbol():
-    """Devuelve ✓ si la salida lo admite; si no (p. ej. al redirigir a un fichero en Windows), [v]."""
+def pick_symbol(preferred, fallback):
+    """Devuelve preferred si la salida lo admite; si no (p. ej. al redirigir a un fichero en Windows), fallback."""
     encoding = sys.stdout.encoding or "ascii"
     try:
-        "✓".encode(encoding)
+        preferred.encode(encoding)
     except (LookupError, UnicodeEncodeError):
-        return "[v]"
-    return "✓"
+        return fallback
+    return preferred
 
 
 def print_result(rule, rows):
-    """Muestra la cabecera de la regla (con ✓ o [x]) y una tabla con sus hallazgos."""
+    """Muestra la cabecera de la regla (con ✓ o ✗) y una tabla con sus hallazgos."""
     passed = not rows
-    symbol, symbol_color = (pass_symbol(), "green") if passed else ("[x]", "red")
+    symbol, symbol_color = (pick_symbol("✓", "v"), "green") if passed else (pick_symbol("✗", "x"), "red")
     text_color = "green" if passed else RISK_COLORS[rule["risk"]]
     click.secho(f"{symbol} ", fg=symbol_color, bold=True, nl=False)
     click.secho(f"[{rule['risk'].upper()}] {rule['id']} - {rule['name']}", fg=text_color, bold=True)
@@ -96,7 +96,7 @@ def main(profile, access_key, secret_key, region, risk, rule_ids):
             client = session.create_client(rule["service"], region_name=region)
             rows = run_rule(client, rule)
         except (BotoCoreError, ClientError, JMESPathError, ValueError) as e:
-            click.secho("[x] ", fg="red", bold=True, nl=False)
+            click.secho(f"{pick_symbol('✗', 'x')} ", fg="red", bold=True, nl=False)
             click.secho(f"{rule['id']}: {e}\n", fg="red")
             errors += 1
             continue
