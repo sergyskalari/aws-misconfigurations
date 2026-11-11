@@ -1,0 +1,40 @@
+# Regla de ejemplo y plantilla para nuevas reglas.
+# Para crear una regla nueva: copia este fichero en rules/ y cambia los valores.
+# No hace falta tocar Python.
+
+# Identificador único. Se usa con --rule (p. ej. --rule ec2-sg-open-ssh).
+id: ec2-sg-open-ssh
+
+# Nombre corto y descripción que se muestran en el informe.
+name: Security Group con SSH abierto a Internet
+description: >
+  Security Groups que permiten conexiones al puerto 22 (SSH) desde cualquier
+  IP de Internet, es decir, desde 0.0.0.0/0 o ::/0.
+
+# Criticidad: low | mid | high | critical
+risk: high
+
+# Cliente de botocore y operación a ejecutar.
+# La operación es el nombre del método en snake_case:
+#   DescribeSecurityGroups -> describe_security_groups
+service: ec2
+operation: describe_security_groups
+
+# Parámetros opcionales que se pasan a la operación.
+params: {}
+
+# Expresión JMESPath (https://jmespath.org) aplicada a la respuesta de la operación.
+# Debe devolver una LISTA con los recursos vulnerables (aquí, los Security Groups).
+# Si la operación pagina, se evalúan todas las páginas juntas.
+query: >-
+  SecurityGroups[?IpPermissions[?
+    (IpProtocol=='-1' || (IpProtocol=='tcp' && FromPort<=`22` && ToPort>=`22`))
+    && (IpRanges[?CidrIp=='0.0.0.0/0'] || Ipv6Ranges[?CidrIpv6=='::/0'])
+  ]]
+
+# Columnas de la tabla de salida.
+# Clave: nombre de la columna. Valor: expresión JMESPath aplicada a cada recurso de la lista.
+columns:
+  GroupId: GroupId
+  Name: GroupName
+  VPC: VpcId
