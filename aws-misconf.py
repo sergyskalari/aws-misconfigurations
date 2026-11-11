@@ -37,9 +37,10 @@ def authenticate(session, region):
 
 def print_result(rule, rows):
     """Muestra la cabecera de la regla y una tabla con sus hallazgos."""
-    click.secho(f"[{rule['risk'].upper()}] {rule['id']} - {rule['name']}", fg=RISK_COLORS[rule["risk"]], bold=True)
+    color = RISK_COLORS[rule["risk"]] if rows else "green"
+    click.secho(f"[{rule['risk'].upper()}] {rule['id']} - {rule['name']}", fg=color, bold=True)
     if not rows:
-        click.echo("  OK, sin hallazgos\n")
+        click.secho("  Sin hallazgos\n", fg="green")
         return
 
     headers = list(rule["columns"])
