@@ -36,11 +36,14 @@ def authenticate(session, region):
 
 
 def print_result(rule, rows):
-    """Muestra la cabecera de la regla y una tabla con sus hallazgos."""
-    color = RISK_COLORS[rule["risk"]] if rows else "green"
-    click.secho(f"[{rule['risk'].upper()}] {rule['id']} - {rule['name']}", fg=color, bold=True)
-    if not rows:
-        click.secho("  Sin hallazgos\n", fg="green")
+    """Muestra la cabecera de la regla (con [v] o [x]) y una tabla con sus hallazgos."""
+    passed = not rows
+    symbol, symbol_color = ("[v]", "green") if passed else ("[x]", "red")
+    text_color = "green" if passed else RISK_COLORS[rule["risk"]]
+    click.secho(f"{symbol} ", fg=symbol_color, bold=True, nl=False)
+    click.secho(f"[{rule['risk'].upper()}] {rule['id']} - {rule['name']}", fg=text_color, bold=True)
+    if passed:
+        click.echo()
         return
 
     headers = list(rule["columns"])
@@ -81,7 +84,8 @@ def main(profile, access_key, secret_key, region, risk, rule_ids):
             client = session.create_client(rule["service"], region_name=region)
             rows = run_rule(client, rule)
         except (BotoCoreError, ClientError, JMESPathError, ValueError) as e:
-            click.secho(f"[error] {rule['id']}: {e}\n", fg="red")
+            click.secho("[x] ", fg="red", bold=True, nl=False)
+            click.secho(f"{rule['id']}: {e}\n", fg="red")
             errors += 1
             continue
         print_result(rule, rows)
