@@ -1,6 +1,5 @@
 # aws-misconfigurations
 Batería de pruebas sobre AWS para resolución de vulnerabilidades, optimización de costes y mejoras de rendimiento.
-
 La herramienta ejecuta un conjunto de **reglas** contra una cuenta de AWS y muestra los recursos que incumplen cada una. Cada regla es un fichero YAML, así que añadir una nueva no requiere tocar Python.
 
 ## Instalación
@@ -14,10 +13,8 @@ Probado con Python 3.12.
 ## Uso
 
 ```bash
-# Ejecutar todas las reglas con un perfil de ~/.aws/credentials
+# Autenticación mediante perfil o claves de acceso
 python aws-misconf.py --profile development
-
-# Credenciales explícitas
 python aws-misconf.py --access_key XXXX --secret_key YYYY
 
 # Solo reglas de riesgo high o superior (high + critical)
@@ -88,3 +85,4 @@ engine.py        carga, filtrado y ejecución de reglas
 rules/           una regla por fichero YAML
 tests/           tests de reglas y del motor
 ```
+
