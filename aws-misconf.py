@@ -1,4 +1,6 @@
 """aws-misconf: busca configuraciones incorrectas en una cuenta de AWS usando las reglas de rules/."""
+import sys
+
 import botocore.session
 import click
 from botocore.exceptions import BotoCoreError, ClientError
@@ -35,10 +37,20 @@ def authenticate(session, region):
     return region, identity
 
 
+def pass_symbol():
+    """Devuelve ✓ si la salida lo admite; si no (p. ej. al redirigir a un fichero en Windows), [v]."""
+    encoding = sys.stdout.encoding or "ascii"
+    try:
+        "✓".encode(encoding)
+    except (LookupError, UnicodeEncodeError):
+        return "[v]"
+    return "✓"
+
+
 def print_result(rule, rows):
-    """Muestra la cabecera de la regla (con [v] o [x]) y una tabla con sus hallazgos."""
+    """Muestra la cabecera de la regla (con ✓ o [x]) y una tabla con sus hallazgos."""
     passed = not rows
-    symbol, symbol_color = ("[v]", "green") if passed else ("[x]", "red")
+    symbol, symbol_color = (pass_symbol(), "green") if passed else ("[x]", "red")
     text_color = "green" if passed else RISK_COLORS[rule["risk"]]
     click.secho(f"{symbol} ", fg=symbol_color, bold=True, nl=False)
     click.secho(f"[{rule['risk'].upper()}] {rule['id']} - {rule['name']}", fg=text_color, bold=True)
