@@ -47,7 +47,7 @@ Resumen: 1 regla(s), 1 hallazgo(s), 0 error(es)
 
 ## Reglas
 
-Cada regla es un fichero `rules/<id>.yaml`. La regla de ejemplo, [rules/ec2-sg-open-ssh.yaml](rules/ec2-sg-open-ssh.yaml), está comentada y sirve de plantilla.
+Cada regla es un fichero `rules/<id>.yaml`. La regla de ejemplo, [rules/plantilla_prueba_regla.yaml](rules/plantilla_prueba_regla.yaml), está comentada y sirve de plantilla.
 
 | Campo | Descripción |
 |---|---|
@@ -65,7 +65,6 @@ Cada regla es un fichero `rules/<id>.yaml`. La regla de ejemplo, [rules/ec2-sg-o
 
 | Regla | Riesgo | Detecta |
 |---|---|---|
-| `ec2-sg-open-ssh` | high | Security Groups con SSH abierto a Internet. |
 | `s3-bucket-exposed-content` | critical | Buckets cuyo contenido es público: política pública o ACL de lectura pública no anuladas por el Public Access Block del bucket. No se consulta el bloqueo a nivel de cuenta. |
 | `s3-bucket-public-acl` | mid | Buckets con una ACL que concede permisos a `AllUsers` o `AuthenticatedUsers`. |
 | `ec2-sg-critical-exposed-ports` | critical | Security Groups de todas las regiones habilitadas con puertos críticos (SSH, RDP, bases de datos, Redis, Docker...) abiertos a `0.0.0.0/0` o `::/0`. La lista de puertos se edita en `params.ports` de la regla. |
@@ -79,14 +78,14 @@ Cada regla es un fichero `rules/<id>.yaml`. La regla de ejemplo, [rules/ec2-sg-o
 Las reglas de S3 necesitan los permisos `s3:ListAllMyBuckets`, `s3:GetBucketAcl`, `s3:GetBucketPolicyStatus` y `s3:GetBucketPublicAccessBlock`. Si falta alguno para un bucket, la regla falla indicando cuál.
 La regla de IAM necesita `iam:GetAccountAuthorizationDetails`.
 Las reglas de usuarios sin MFA y de credenciales (antiguas y a punto de caducar) necesitan `iam:GenerateCredentialReport` e `iam:GetCredentialReport`.
-La regla de puertos críticos necesita `ec2:DescribeRegions` y `ec2:DescribeSecurityGroups`. Se solapa con `ec2-sg-open-ssh` en el puerto 22.
+La regla de puertos críticos necesita `ec2:DescribeRegions` y `ec2:DescribeSecurityGroups`. 
 La regla de Elastic IPs necesita `ec2:DescribeRegions` y `ec2:DescribeAddresses`.
 La regla de IPs públicas sin balanceador necesita `ec2:DescribeRegions` y `ec2:DescribeNetworkInterfaces`.
 
 ## Cómo añadir una regla
 
 1. Busca la operación en la [documentación de boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/) y escribe el nombre del método en snake_case.
-2. Copia `rules/ec2-sg-open-ssh.yaml` a `rules/<tu-id>.yaml` y rellena los campos.
+2. Copia `rules/plantilla_prueba_regla.yaml` a `rules/<tu-id>.yaml` y rellena los campos.
 3. Prueba la `query` con una respuesta real de la operación en el [probador de JMESPath](https://jmespath.org/).
 4. Ejecuta los tests:
    ```bash
