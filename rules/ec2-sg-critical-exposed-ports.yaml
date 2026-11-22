@@ -1,0 +1,58 @@
+id: ec2-sg-critical-exposed-ports
+name: Security Group con puertos críticos expuestos a Internet
+description: >
+  Security Groups con alguna regla de entrada abierta a 0.0.0.0/0 o ::/0 (protocolo
+  tcp o todo el tráfico) cuyo rango incluye un puerto crítico: acceso remoto, bases
+  de datos, caché, APIs de contenedores... Un rango como 0-65535 expone todos los
+  puertos de la lista. Orígenes privados, otros Security Groups y prefix lists no se
+  consideran expuestos.
+risk: critical
+
+# Regla con código propio (ver checks.py): recorre todas las regiones habilitadas
+# (describe_regions) y ejecuta describe_security_groups en cada una. Ignora --region.
+service: ec2
+check: ec2_sg_critical_exposed_ports
+
+# Lista de puertos críticos. Añade, quita o renombra entradas aquí sin tocar Python.
+# Un servicio con varios puertos (p. ej. MongoDB 27017-27018) se escribe como una entrada por puerto.
+params:
+  ports:
+    # Acceso remoto
+    - {port: 22, name: SSH}
+    - {port: 23, name: Telnet}
+    - {port: 3389, name: RDP}
+    - {port: 5900, name: VNC}
+    # Compartición de ficheros / Windows
+    - {port: 21, name: FTP}
+    - {port: 135, name: RPC}
+    - {port: 139, name: NetBIOS}
+    - {port: 445, name: SMB}
+    # Bases de datos
+    - {port: 1433, name: MSSQL}
+    - {port: 1521, name: Oracle}
+    - {port: 3306, name: MySQL}
+    - {port: 5432, name: PostgreSQL}
+    - {port: 27017, name: MongoDB}
+    - {port: 27018, name: MongoDB}
+    - {port: 9042, name: Cassandra}
+    - {port: 5984, name: CouchDB}
+    # Caché / búsqueda
+    - {port: 6379, name: Redis}
+    - {port: 11211, name: Memcached}
+    - {port: 9200, name: Elasticsearch}
+    - {port: 9300, name: Elasticsearch}
+    # Contenedores / orquestación
+    - {port: 2375, name: Docker}
+    - {port: 2376, name: Docker}
+    - {port: 6443, name: Kubernetes API}
+    - {port: 10250, name: Kubelet}
+    - {port: 2379, name: etcd}
+    - {port: 2380, name: etcd}
+
+columns:
+  GroupId: GroupId
+  Name: Name
+  Region: Region
+  VPC: VPC
+  Ports: Ports
+  Source: Source

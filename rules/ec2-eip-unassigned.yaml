@@ -1,0 +1,20 @@
+id: ec2-eip-unassigned
+name: IP pública reservada sin asignar
+description: >
+  Elastic IPs reservadas en la cuenta que no están asociadas a ningún recurso
+  (instancia EC2, interfaz de red, NAT Gateway...). AWS cobra cada IPv4 pública
+  por hora esté o no en uso, así que una IP sin asignar es un coste sin servicio.
+  Se excluyen las IPs de pools BYOIP, que AWS no cobra. Regla de optimización de
+  costes, no de seguridad.
+risk: low
+
+# Regla con código propio (ver checks.py): recorre todas las regiones habilitadas
+# (describe_regions) y ejecuta describe_addresses en cada una. Ignora --region.
+service: ec2
+check: ec2_eip_unassigned
+
+columns:
+  AllocationId: AllocationId
+  PublicIp: PublicIp
+  Region: Region
+  Name: Name

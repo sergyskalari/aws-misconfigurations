@@ -1,0 +1,31 @@
+id: ec2-public-ip-without-lb
+name: IP pública asignada a un recurso sin balanceador
+description: >
+  Interfaces de red (ENI) con una IPv4 pública asociada, Elastic IP o efímera, que
+  no pertenecen a un balanceador de carga ni a un NAT Gateway. Un recurso con IP
+  pública propia es accesible desde Internet sin pasar por un punto de entrada
+  controlado. No es crítico por sí mismo (el acceso real depende de los Security
+  Groups), pero conviene revisarlo como prevención. Las Elastic IPs sin asociar no
+  tienen ENI: las cubre ec2-eip-unassigned.
+risk: mid
+
+# Regla con código propio (ver checks.py): recorre todas las regiones habilitadas
+# (describe_regions) y ejecuta describe_network_interfaces en cada una. Ignora --region.
+service: ec2
+check: ec2_public_ip_without_lb
+
+# ENIs que se ignoran aunque tengan IP pública. Añade o quita entradas sin tocar Python.
+params:
+  excluded_interface_types:
+    - network_load_balancer
+    - gateway_load_balancer
+    - nat_gateway
+  excluded_requester_ids:
+    - amazon-elb  # ALB y Classic Load Balancer
+
+columns:
+  PublicIp: PublicIp
+  Region: Region
+  ResourceId: ResourceId
+  ResourceType: ResourceType
+  IpType: IpType

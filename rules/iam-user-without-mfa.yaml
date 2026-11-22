@@ -1,0 +1,24 @@
+id: iam-user-without-mfa
+name: Usuario con acceso a consola sin MFA
+description: >
+  Usuarios IAM que pueden iniciar sesión en la consola con contraseña y no tienen
+  ningún dispositivo MFA activo, virtual ni físico. La cuenta root se incluye
+  (<root_account>). Si la contraseña se filtra, nada impide el acceso con los
+  permisos del usuario. Quedan fuera los usuarios sin contraseña (solo access keys).
+  Se basa en el informe de credenciales de IAM, que AWS reutiliza hasta 4 horas:
+  los cambios recientes pueden tardar en reflejarse.
+risk: high
+
+# Regla con código propio (ver checks.py). IAM es global: ignora --region.
+service: iam
+check: iam_user_without_mfa
+
+# Espera máxima y pausa entre consultas mientras IAM genera el informe de credenciales.
+params:
+  report_timeout_seconds: 30
+  report_poll_interval_seconds: 2
+
+columns:
+  UserName: UserName
+  PasswordLastUsed: PasswordLastUsed
+  ActiveAccessKeys: ActiveAccessKeys
