@@ -1,0 +1,17 @@
+id: s3-bucket-exposed-content
+name: Bucket con contenido expuesto al público
+description: >
+  Buckets S3 cuyo contenido puede leer cualquier persona: tienen una política de
+  bucket pública (RestrictPublicBuckets desactivado) o una ACL que concede lectura
+  a AllUsers/AuthenticatedUsers (IgnorePublicAcls desactivado).
+risk: critical
+
+# Regla con código propio (ver checks.py): lista los buckets de todas las regiones
+# y consulta cada uno desde su región. Ignora --region.
+service: s3
+check: s3_bucket_exposed_content
+
+# Columnas: nombre -> expresión JMESPath sobre cada recurso que devuelve el check.
+columns:
+  BucketId: BucketId
+  Region: Region

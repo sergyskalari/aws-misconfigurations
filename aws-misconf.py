@@ -6,7 +6,7 @@ import click
 from botocore.exceptions import BotoCoreError, ClientError
 from jmespath.exceptions import JMESPathError
 
-from engine import RISKS, filter_rules, load_rules, run_rule
+from engine import RISKS, filter_rules, load_rules, run_check, run_rule
 
 DEFAULT_REGION = "us-east-1"
 RISK_COLORS = {"low": "green", "mid": "yellow", "high": "red", "critical": "magenta"}
@@ -93,8 +93,10 @@ def main(profile, access_key, secret_key, region, risk, rule_ids):
     findings = errors = 0
     for rule in rules:
         try:
-            client = session.create_client(rule["service"], region_name=region)
-            rows = run_rule(client, rule)
+            if "check" in rule:  # reglas con código propio: recorren todas las regiones por su cuenta
+                rows = run_check(session, rule)
+            else:
+                rows = run_rule(session.create_client(rule["service"], region_name=region), rule)
         except (BotoCoreError, ClientError, JMESPathError, ValueError) as e:
             click.secho(f"{pick_symbol('✗', 'x')} ", fg="red", bold=True, nl=False)
             click.secho(f"{rule['id']}: {e}\n", fg="red")

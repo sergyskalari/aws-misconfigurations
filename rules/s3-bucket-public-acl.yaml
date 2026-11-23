@@ -1,0 +1,15 @@
+id: s3-bucket-public-acl
+name: Bucket con ACL pública
+description: >
+  Buckets S3 con una ACL que concede permisos a AllUsers o AuthenticatedUsers.
+  Se informa aunque el Public Access Block la neutralice, porque basta con
+  desactivarlo para que el acceso quede abierto.
+risk: mid
+
+service: s3
+check: s3_bucket_public_acl
+
+columns:
+  BucketId: BucketId
+  Region: Region
+  Permissions: Permissions

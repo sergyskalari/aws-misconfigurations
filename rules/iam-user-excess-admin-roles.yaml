@@ -1,0 +1,28 @@
+id: iam-user-excess-admin-roles
+name: Usuario con más de 3 roles administrativos
+description: >
+  Usuarios IAM con más de 3 asignaciones administrativas, sumando políticas
+  asociadas directamente, a través de sus grupos y roles que pueden asumir.
+  Cuentan como administrativas las políticas gestionadas de AWS indicadas en
+  admin_policies y cualquier política propia (gestionada o inline) con un Allow
+  de Action "*" o "iam:*" sobre Resource "*". Cada asignación cuenta una vez.
+risk: mid
+
+# Regla con código propio (ver checks.py). IAM es global: ignora --region.
+service: iam
+check: iam_user_excess_admin_roles
+
+# Se informa de los usuarios con MÁS asignaciones que el umbral.
+# El nombre de la regla menciona el umbral por defecto; si lo cambias, actualiza también 'name'.
+params:
+  threshold: 3
+  admin_policies:
+    - AdministratorAccess
+    - PowerUserAccess
+    - IAMFullAccess
+    - SecurityAudit
+
+columns:
+  UserName: UserName
+  AdminCount: AdminCount
+  AdminRoles: AdminRoles

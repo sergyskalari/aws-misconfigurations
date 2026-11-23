@@ -5,9 +5,12 @@ import jmespath
 import yaml
 from jmespath.exceptions import JMESPathError
 
+from checks import CHECKS
+
 RULES_DIR = Path(__file__).resolve().parent / "rules"
 RISKS = ["low", "mid", "high", "critical"]  # de menor a mayor criticidad
-REQUIRED_FIELDS = ("id", "name", "description", "risk", "service", "operation", "query", "columns")
+COMMON_FIELDS = ("id", "name", "description", "risk", "service", "columns")
+OPERATION_FIELDS = ("operation", "query")  # reglas declarativas: una operación de botocore + query JMESPath
 
 
 def load_rules(folder=RULES_DIR):
@@ -32,9 +35,13 @@ def _validate(rule, filename):
     if not isinstance(rule, dict):
         raise ValueError(f"{filename}: el fichero debe contener un diccionario YAML")
 
-    missing = [field for field in REQUIRED_FIELDS if field not in rule]
+    required = COMMON_FIELDS if "check" in rule else COMMON_FIELDS + OPERATION_FIELDS
+    missing = [field for field in required if field not in rule]
     if missing:
         raise ValueError(f"{filename}: faltan los campos {', '.join(missing)}")
+
+    if "check" in rule and rule["check"] not in CHECKS:
+        raise ValueError(f"{filename}: check '{rule['check']}' desconocido. Disponibles: {', '.join(sorted(CHECKS))}")
 
     if rule["risk"] not in RISKS:
         raise ValueError(f"{filename}: risk '{rule['risk']}' no válido. Usa uno de: {', '.join(RISKS)}")
@@ -43,7 +50,8 @@ def _validate(rule, filename):
         raise ValueError(f"{filename}: 'columns' debe ser un diccionario con al menos una columna")
 
     try:
-        jmespath.compile(rule["query"])
+        if "query" in rule:
+            jmespath.compile(rule["query"])
         for expression in rule["columns"].values():
             jmespath.compile(expression)
     except JMESPathError as e:
@@ -84,6 +92,15 @@ def run_rule(client, rule):
     if not isinstance(resources, list):
         raise ValueError(f"{rule['id']}: la query debe devolver una lista de recursos")
 
+    return _to_rows(rule, resources)
+
+
+def run_check(session, rule):
+    """Ejecuta una regla con `check` (código Python) y devuelve una fila por recurso, igual que run_rule."""
+    return _to_rows(rule, CHECKS[rule["check"]](session, rule.get("params") or {}))
+
+
+def _to_rows(rule, resources):
     return [
         {column: jmespath.search(expression, resource) for column, expression in rule["columns"].items()}
         for resource in resources
